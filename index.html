@@ -32,7 +32,7 @@
 <script>
 'use strict';
 
-const K = ['id','kategori','nama','hargabeli','hargajual','stok'];
+const K = ['idproduk','subkategori','kategori','namaproduk','hargabeli','hargajual','foto_url'];
 const S = {data:[], cur:null, fill:null, page:1, u:'', i:''};
 const $ = id => document.getElementById(id);
 const M = $('m'), FB = $('fb'), SO = $('so'), Q = $('q'), F = $('f');
@@ -99,7 +99,7 @@ function render() {
       M.appendChild(l);
       M.appendChild(document.createElement('br'));
     });
-    M.querySelectorAll('input')[2].focus();
+    M.querySelectorAll('input')[3].focus();
     ['save','cancel','dup','del'].forEach(f => FB.appendChild(btn(f, f)));
   }
   localStorage.D = JSON.stringify(S.data);
