@@ -150,15 +150,18 @@ async function push() {
 }
 
 async function pull() {
-  if (!S.u || !S.i) return;
+  if (!S.u) { S.msg = 'gas -'; render(); return; }
+  if (!S.i) { S.msg = 'sheet -'; render(); return; }
   try {
-    const r = await fetch(S.u + '?action=pull&sid=' + S.i);
-    const j = await r.json();
-    if (j.ok && j.lines) {
-      S.data = j.lines.map(l => l.split('|'));
-      render();
-    }
-  } catch(_){}
+    const p = await (await fetch(S.u + '?action=ping&sid=' + S.i)).json();
+    if (!p.ok || p.sheet !== 'ok') { S.msg = 'gas ok sheet -'; render(); return; }
+    const j = await (await fetch(S.u + '?action=pull&sid=' + S.i)).json();
+    if (!j.ok) { S.msg = 'gas ok sheet ok pull -'; render(); return; }
+    S.data = j.lines.map(l => l.split('|'));
+    const h = (j.lines[0] || '').split('|').join(',');
+    S.msg = h === K.join(',') ? 'gas ok sheet ok sync ok' : 'gas ok sheet ok schema -';
+  } catch(_) { S.msg = 'gas -'; }
+  render();
 }
 
 function rebuildSort() {
