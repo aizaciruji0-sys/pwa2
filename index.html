@@ -18,6 +18,8 @@
 <button data-a=gas>gas</button>
 <button data-a=gsheets>gsheets</button>
 <button data-a=sheet>sheet</button>
+<button data-a=sync>sync</button>
+<button data-a=schema>schema</button>
 <button data-a=wipe>wipe</button>
 </header>
 
@@ -44,6 +46,13 @@ try {
   S.data = JSON.parse(localStorage.D || '[]').map(r => Array.isArray(r) ? r : String(r).split('|'));
   S.u = localStorage.U || '';
   S.i = localStorage.V || '';
+  if (localStorage.K) {
+    K.length = 0;
+    localStorage.K.split(',').forEach(x => K.push(x));
+    SEQ.length = 0;
+    SEQ.push([-1,0],[-2,0]);
+    K.forEach((k,i) => SEQ.push([i,1],[i,-1]));
+  }
 } catch(_){}
 
 const nextId = () => {
@@ -99,7 +108,8 @@ function render() {
       M.appendChild(l);
       M.appendChild(document.createElement('br'));
     });
-    M.querySelectorAll('input')[3].focus();
+    const ins = M.querySelectorAll('input');
+    if (ins.length) (ins[3] || ins[0]).focus();
     ['save','cancel','dup','del'].forEach(f => FB.appendChild(btn(f, f)));
   }
   localStorage.D = JSON.stringify(S.data);
@@ -128,9 +138,23 @@ async function pull() {
   } catch(_){}
 }
 
+function rebuildSort() {
+  SO.innerHTML = '';
+  SEQ.forEach(([c, d], i) => {
+    const o = document.createElement('option');
+    o.value = i;
+    o.textContent = c < 0 ? (c === -1 ? 'sort' : 'rev') : K[c] + (d > 0 ? '+' : '-');
+    SO.appendChild(o);
+  });
+  SO.value = 0;
+}
+
 function act(key) {
   if (key === 'gas') {
-    window.open('https://script.google.com/home/projects/create', '_blank');
+    window.open(
+      S.u ? 'https://script.google.com/home' : 'https://script.google.com/home/projects/create',
+      '_blank'
+    );
     return;
   }
   if (key === 'gsheets') {
@@ -140,6 +164,26 @@ function act(key) {
         : 'https://docs.google.com/spreadsheets/create',
       '_blank'
     );
+    return;
+  }
+  if (key === 'sync') {
+    if (!S.u || !S.i) { alert('setup sheet dulu'); return; }
+    push().then(pull);
+    return;
+  }
+  if (key === 'schema') {
+    const inp = prompt('kolom (pisah koma)', K.join(','));
+    if (!inp) return;
+    const arr = inp.split(',').map(s => s.trim()).filter(Boolean);
+    if (!arr.length) return;
+    K.length = 0;
+    arr.forEach(x => K.push(x));
+    SEQ.length = 0;
+    SEQ.push([-1,0],[-2,0]);
+    K.forEach((k,i) => SEQ.push([i,1],[i,-1]));
+    localStorage.K = K.join(',');
+    rebuildSort();
+    render();
     return;
   }
   if (key === 'sheet') {
@@ -211,13 +255,7 @@ F.onchange = async () => {
 Q.oninput = () => { S.page = 1; render(); };
 SO.onchange = () => { localStorage.I = SO.value; S.page = 1; render(); };
 
-SEQ.forEach(([c, d], i) => {
-  const o = document.createElement('option');
-  o.value = i;
-  o.textContent = c < 0 ? (c === -1 ? 'sort' : 'rev') : K[c] + (d > 0 ? '+' : '-');
-  SO.appendChild(o);
-});
-SO.value = localStorage.I || 0;
+rebuildSort();
 render();
 pull();
 
