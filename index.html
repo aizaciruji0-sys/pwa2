@@ -15,7 +15,7 @@
 <button data-a=csv>csv</button>
 <button data-a=tsv>tsv</button>
 <button data-a=txt>txt</button>
-<button data-a=sheet>sheet</button>
+<button data-a=koneksi>sheet</button>
 <button data-a=sync>sync</button>
 <button data-a=test>tes</button>
 <button data-a=schema>schema</button>
@@ -35,8 +35,7 @@
 'use strict';
 
 const K = ['idproduk','subkategori','kategori','namaproduk','hargabeli','hargajual','foto_url'];
-const GAS = 'https://script.google.com/macros/s/AKfycbylEvKLoedfGeeTy3zey9Ddaezw2S5ptJ87Yk6wzL9Ye72kw3unuibUVN0up-EBn9zW-g/exec';
-const S = {data:[], cur:null, fill:null, page:1, u:GAS, i:'', msg:'', form:null, pend:null};
+const S = {data:[], cur:null, fill:null, page:1, u:'', i:'', msg:'', form:null, pend:null};
 const $ = id => document.getElementById(id);
 const M = $('m'), FB = $('fb'), SO = $('so'), Q = $('q'), F = $('f');
 
@@ -45,6 +44,7 @@ K.forEach((k,i) => SEQ.push([i,1],[i,-1]));
 
 try {
   S.data = JSON.parse(localStorage.D || '[]').map(r => Array.isArray(r) ? r : String(r).split('|'));
+  S.u = localStorage.U || '';
   S.i = localStorage.V || '';
   if (localStorage.K) {
     K.length = 0;
@@ -88,13 +88,16 @@ function render() {
   const end = Math.min(S.page * 20, v.length);
   M.innerHTML = FB.innerHTML = '';
 
-  if (S.form === 'sheet') {
-    const l = document.createElement('label');
-    l.textContent = 'sheet url/id ';
-    const inp = document.createElement('input');
-    inp.value = S.i;
-    l.appendChild(inp);
-    M.appendChild(l);
+  if (S.form === 'koneksi') {
+    [['gas', S.u], ['sheet', S.i]].forEach(([k, val]) => {
+      const l = document.createElement('label');
+      l.textContent = k + ' ';
+      const inp = document.createElement('input');
+      inp.value = val;
+      l.appendChild(inp);
+      M.appendChild(l);
+      M.appendChild(document.createElement('br'));
+    });
     ['save','cancel'].forEach(f => FB.appendChild(btn(f, f)));
   } else if (S.form === 'schema') {
     const l = document.createElement('label');
@@ -194,7 +197,7 @@ function act(key) {
   }
   if (key === 'test') { S.msg = '...'; render(); pull(); return; }
   if (key === 'schema') { S.form = 'schema'; S.cur = null; render(); return; }
-  if (key === 'sheet')  { S.form = 'sheet';  S.cur = null; render(); return; }
+  if (key === 'koneksi'){ S.form = 'koneksi'; S.cur = null; render(); return; }
   if (key === 'add') { S.form = null; S.cur = -1; S.fill = [nextId()]; }
   else if (key === 'dup') {
     const p = (S.cur >= 0 ? S.data[S.cur] : inputs()).slice();
@@ -203,9 +206,12 @@ function act(key) {
     S.cur = -1;
   }
   else if (key === 'save') {
-    if (S.form === 'sheet') {
-      const v = M.querySelector('input').value;
+    if (S.form === 'koneksi') {
+      const ins = M.querySelectorAll('input');
+      S.u = ins[0].value.trim();
+      const v = ins[1].value.trim();
       S.i = (v.match(/\/d\/([\w-]{10,})/) || [])[1] || v;
+      localStorage.U = S.u;
       localStorage.V = S.i;
       S.form = null;
       render(); push(); return;
