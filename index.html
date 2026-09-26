@@ -138,14 +138,14 @@ function render() {
 }
 
 async function push() {
-  if (!S.u || !S.i) return;
   try {
-    await fetch(S.u, {
+    const r = await fetch(S.u, {
       method: 'POST',
       body: JSON.stringify({sid: S.i, header: K, lines: S.data.map(r => r.join('|'))}),
       headers: {'Content-Type': 'text/plain'}
     });
-  } catch(_){}
+    return !!(await r.json()).ok;
+  } catch(_) { return false; }
 }
 
 async function pull() {
@@ -153,11 +153,12 @@ async function pull() {
   if (!S.i) { S.msg = 'sheet -'; render(); return; }
   try {
     const p = await (await fetch(S.u + '?action=ping&sid=' + S.i)).json();
-    if (!p.ok || p.sheet !== 'ok') { S.msg = 'gas ok sheet -'; render(); return; }
+    if (!p.ok)         { S.msg = 'gas -'; render(); return; }
+    if (p.sheet !== 'ok') { S.msg = 'sheet -'; render(); return; }
     const j = await (await fetch(S.u + '?action=pull&sid=' + S.i)).json();
-    if (!j.ok) { S.msg = 'gas ok sheet ok pull -'; render(); return; }
+    if (!j.ok) { S.msg = 'pull -'; render(); return; }
     S.data = j.lines.map(l => l.split('|'));
-    S.msg = (j.header || []).join(',') === K.join(',') ? 'gas ok sheet ok sync ok' : 'gas ok sheet ok schema -';
+    S.msg = (j.header || []).join(',') === K.join(',') ? 'sync ok' : 'schema -';
   } catch(_) { S.msg = 'gas -'; }
   render();
 }
@@ -191,11 +192,20 @@ function act(key) {
   S.msg = ''; S.pend = null;
 
   if (key === 'sync') {
-    if (!S.u || !S.i) { S.msg = 'gas -'; render(); return; }
-    push().then(pull);
+    if (!S.u) { S.msg = 'gas -'; render(); return; }
+    if (!S.i) { S.msg = 'sheet -'; render(); return; }
+    S.msg = '...'; render();
+    (async () => {
+      if (!await push()) { S.msg = 'push -'; render(); return; }
+      await pull();
+    })();
     return;
   }
-  if (key === 'test') { S.msg = '...'; render(); pull(); return; }
+  if (key === 'test') {
+    S.msg = '...'; render();
+    pull();
+    return;
+  }
   if (key === 'schema') { S.form = 'schema'; S.cur = null; render(); return; }
   if (key === 'koneksi'){ S.form = 'koneksi'; S.cur = null; render(); return; }
   if (key === 'add') { S.form = null; S.cur = -1; S.fill = [nextId()]; }
