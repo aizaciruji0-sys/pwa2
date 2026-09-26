@@ -15,8 +15,6 @@
 <button data-a=csv>csv</button>
 <button data-a=tsv>tsv</button>
 <button data-a=txt>txt</button>
-<button data-a=gas>gas</button>
-<button data-a=gsheets>gsheets</button>
 <button data-a=sheet>sheet</button>
 <button data-a=sync>sync</button>
 <button data-a=test>tes</button>
@@ -193,22 +191,6 @@ function act(key) {
 
   S.msg = ''; S.pend = null;
 
-  if (key === 'gas') {
-    window.open(
-      S.u ? 'https://script.google.com/home' : 'https://script.google.com/home/projects/create',
-      '_blank'
-    );
-    return;
-  }
-  if (key === 'gsheets') {
-    window.open(
-      S.i
-        ? 'https://docs.google.com/spreadsheets/d/' + S.i + '/edit'
-        : 'https://docs.google.com/spreadsheets/create',
-      '_blank'
-    );
-    return;
-  }
   if (key === 'sync') {
     if (!S.u || !S.i) { S.msg = 'gas -'; render(); return; }
     push().then(pull);
