@@ -35,7 +35,8 @@
 'use strict';
 
 const K = ['idproduk','subkategori','kategori','namaproduk','hargabeli','hargajual','foto_url'];
-const S = {data:[], cur:null, fill:null, page:1, u:'', i:'', msg:'', form:null, pend:null};
+const GAS = 'https://script.google.com/macros/s/AKfycbylEvKLoedfGeeTy3zey9Ddaezw2S5ptJ87Yk6wzL9Ye72kw3unuibUVN0up-EBn9zW-g/exec';
+const S = {data:[], cur:null, fill:null, page:1, u:GAS, i:'', msg:'', form:null, pend:null};
 const $ = id => document.getElementById(id);
 const M = $('m'), FB = $('fb'), SO = $('so'), Q = $('q'), F = $('f');
 
@@ -44,7 +45,6 @@ K.forEach((k,i) => SEQ.push([i,1],[i,-1]));
 
 try {
   S.data = JSON.parse(localStorage.D || '[]').map(r => Array.isArray(r) ? r : String(r).split('|'));
-  S.u = localStorage.U || '';
   S.i = localStorage.V || '';
   if (localStorage.K) {
     K.length = 0;
@@ -89,15 +89,12 @@ function render() {
   M.innerHTML = FB.innerHTML = '';
 
   if (S.form === 'sheet') {
-    [['url', S.u], ['id', S.i]].forEach(([k, val]) => {
-      const l = document.createElement('label');
-      l.textContent = k + ' ';
-      const inp = document.createElement('input');
-      inp.value = val;
-      l.appendChild(inp);
-      M.appendChild(l);
-      M.appendChild(document.createElement('br'));
-    });
+    const l = document.createElement('label');
+    l.textContent = 'sheet url/id ';
+    const inp = document.createElement('input');
+    inp.value = S.i;
+    l.appendChild(inp);
+    M.appendChild(l);
     ['save','cancel'].forEach(f => FB.appendChild(btn(f, f)));
   } else if (S.form === 'schema') {
     const l = document.createElement('label');
@@ -208,10 +205,8 @@ function act(key) {
   }
   else if (key === 'save') {
     if (S.form === 'sheet') {
-      const ins = M.querySelectorAll('input');
-      S.u = ins[0].value;
-      S.i = (ins[1].value.match(/\/d\/([\w-]{10,})/) || [])[1] || ins[1].value;
-      localStorage.U = S.u;
+      const v = M.querySelector('input').value;
+      S.i = (v.match(/\/d\/([\w-]{10,})/) || [])[1] || v;
       localStorage.V = S.i;
       S.form = null;
       render(); push(); return;
