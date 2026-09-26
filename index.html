@@ -21,6 +21,7 @@
 <button data-a=sync>sync</button>
 <button data-a=schema>schema</button>
 <button data-a=wipe>wipe</button>
+<span id=msg></span>
 </header>
 
 <main id=m></main>
@@ -132,11 +133,7 @@ function render() {
     ['save','cancel','dup','del'].forEach(f => FB.appendChild(btn(f, f)));
   }
 
-  if (S.msg) {
-    const d = document.createElement('div');
-    d.textContent = S.msg;
-    FB.insertBefore(d, FB.firstChild);
-  }
+  $('msg').textContent = S.msg;
 
   localStorage.D = JSON.stringify(S.data);
 }
