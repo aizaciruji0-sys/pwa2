@@ -139,7 +139,7 @@ async function push() {
   try {
     await fetch(S.u, {
       method: 'POST',
-      body: JSON.stringify({sid: S.i, lines: S.data.map(r => r.join('|'))}),
+      body: JSON.stringify({sid: S.i, header: K, lines: S.data.map(r => r.join('|'))}),
       headers: {'Content-Type': 'text/plain'}
     });
   } catch(_){}
@@ -154,8 +154,7 @@ async function pull() {
     const j = await (await fetch(S.u + '?action=pull&sid=' + S.i)).json();
     if (!j.ok) { S.msg = 'gas ok sheet ok pull -'; render(); return; }
     S.data = j.lines.map(l => l.split('|'));
-    const h = (j.lines[0] || '').split('|').join(',');
-    S.msg = h === K.join(',') ? 'gas ok sheet ok sync ok' : 'gas ok sheet ok schema -';
+    S.msg = (j.header || []).join(',') === K.join(',') ? 'gas ok sheet ok sync ok' : 'gas ok sheet ok schema -';
   } catch(_) { S.msg = 'gas -'; }
   render();
 }
