@@ -19,6 +19,7 @@
 <button data-a=gsheets>gsheets</button>
 <button data-a=sheet>sheet</button>
 <button data-a=sync>sync</button>
+<button data-a=test>tes</button>
 <button data-a=schema>schema</button>
 <button data-a=wipe>wipe</button>
 <span id=msg></span>
@@ -209,10 +210,11 @@ function act(key) {
     return;
   }
   if (key === 'sync') {
-    if (!S.u || !S.i) { S.msg = 'setup sheet dulu'; render(); return; }
+    if (!S.u || !S.i) { S.msg = 'gas -'; render(); return; }
     push().then(pull);
     return;
   }
+  if (key === 'test') { S.msg = '...'; render(); pull(); return; }
   if (key === 'schema') { S.form = 'schema'; S.cur = null; render(); return; }
   if (key === 'sheet')  { S.form = 'sheet';  S.cur = null; render(); return; }
   if (key === 'add') { S.form = null; S.cur = -1; S.fill = [nextId()]; }
