@@ -18,7 +18,6 @@
 <button data-a=koneksi>koneksi</button>
 <button data-a=push>push</button>
 <button data-a=pull>pull</button>
-<button data-a=test>tes</button>
 <button data-a=schema>schema</button>
 <button data-a=wipe>wipe</button>
 <span id=msg></span>
@@ -153,13 +152,18 @@ async function pull() {
   if (!S.u) { S.msg = 'gas -'; render(); return; }
   if (!S.i) { S.msg = 'sheet -'; render(); return; }
   try {
-    const p = await (await fetch(S.u + '?action=ping&sid=' + S.i)).json();
-    if (!p.ok)         { S.msg = 'gas -'; render(); return; }
-    if (p.sheet !== 'ok') { S.msg = 'sheet -'; render(); return; }
     const j = await (await fetch(S.u + '?action=pull&sid=' + S.i)).json();
     if (!j.ok) { S.msg = 'pull -'; render(); return; }
-    S.data = j.lines.map(l => l.split('|'));
-    S.msg = (j.header || []).join(',') === K.join(',') ? 'sync ok' : 'schema -';
+    const rows = j.lines.map(l => l.split('|'));
+    const map = {};
+    S.data.forEach((r, i) => { if (r[0]) map[r[0]] = i; });
+    let n = 0;
+    rows.forEach(r => {
+      const i = map[r[0]];
+      if (i === undefined) { S.data.push(r); n++; }
+      else if (S.data[i].join('|') !== r.join('|')) { S.data[i] = r; n++; }
+    });
+    S.msg = (j.header || []).join(',') === K.join(',') ? 'pull ok ' + n : 'schema -';
   } catch(_) { S.msg = 'gas -'; }
   render();
 }
@@ -200,11 +204,6 @@ function act(key) {
     return;
   }
   if (key === 'pull') {
-    S.msg = '...'; render();
-    pull();
-    return;
-  }
-  if (key === 'test') {
     S.msg = '...'; render();
     pull();
     return;
