@@ -16,7 +16,8 @@
 <button data-a=tsv>tsv</button>
 <button data-a=txt>txt</button>
 <button data-a=koneksi>koneksi</button>
-<button data-a=sync>sync</button>
+<button data-a=push>push</button>
+<button data-a=pull>pull</button>
 <button data-a=test>tes</button>
 <button data-a=schema>schema</button>
 <button data-a=wipe>wipe</button>
@@ -191,14 +192,16 @@ function act(key) {
 
   S.msg = ''; S.pend = null;
 
-  if (key === 'sync') {
+  if (key === 'push') {
     if (!S.u) { S.msg = 'gas -'; render(); return; }
     if (!S.i) { S.msg = 'sheet -'; render(); return; }
     S.msg = '...'; render();
-    (async () => {
-      if (!await push()) { S.msg = 'push -'; render(); return; }
-      await pull();
-    })();
+    push().then(ok => { S.msg = ok ? 'push ok' : 'push -'; render(); });
+    return;
+  }
+  if (key === 'pull') {
+    S.msg = '...'; render();
+    pull();
     return;
   }
   if (key === 'test') {
